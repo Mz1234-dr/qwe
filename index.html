@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#f4f7fb">
+<title>🏸 คิวทีมแบดมินตัน</title>
+<style>
+:root{
+  --bg:#f4f7fb; --card:#fff; --text:#172033; --muted:#64748b;
+  --border:#dbe2ea; --green:#22c55e; --green-dark:#15803d;
+  --green-bg:#dcfce7; --green-border:#86efac;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  -webkit-text-size-adjust:100%;
+}
+main{max-width:760px;margin:0 auto;padding:24px 20px 34px}
+h1{font-size:30px;line-height:1.2;margin:0 0 6px;font-weight:800}
+.subtitle{color:var(--muted);font-size:17px;margin-bottom:22px}
+.section-title{font-size:21px;font-weight:750;margin:0 0 12px}
+.queue{display:flex;flex-direction:column;gap:10px}
+.team{
+  min-height:68px;background:var(--card);border:2px solid var(--border);
+  border-radius:16px;padding:12px 12px 12px 14px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+}
+.team.top,.team.second{
+  background:var(--green-bg);border-color:var(--green-border);
+}
+.left{display:flex;align-items:center;gap:12px;min-width:0}
+.number{
+  width:42px;height:42px;flex:0 0 42px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:#eef2f7;font-size:18px;font-weight:800;
+}
+.top .number,.second .number{background:var(--green);color:#fff}
+.name{font-size:20px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.badge{font-size:13px;color:var(--green-dark);font-weight:700}
+button,input{font:inherit}
+.remove{
+  min-width:62px;min-height:48px;padding:8px 12px;border-radius:12px;
+  border:1px solid var(--border);background:#fff;color:#334155;font-weight:650;
+  touch-action:manipulation;
+}
+.next{
+  width:100%;min-height:74px;margin:20px 0 8px;border:0;border-radius:18px;
+  background:var(--green);color:#fff;font-size:25px;font-weight:850;
+  box-shadow:0 4px 0 var(--green-dark);touch-action:manipulation;
+}
+.next:active{transform:translateY(2px);box-shadow:0 2px 0 var(--green-dark)}
+.next:disabled{opacity:.45;box-shadow:none}
+.hint{text-align:center;color:var(--muted);font-size:15px;margin-bottom:22px}
+.add-box{
+  background:var(--card);border:1px solid var(--border);border-radius:16px;padding:15px;
+}
+.add-row{display:flex;gap:10px}
+input{
+  min-width:0;flex:1;height:54px;border:2px solid var(--border);
+  border-radius:13px;padding:0 14px;background:#fff;font-size:18px;
+}
+input:focus{outline:3px solid #bbf7d0;border-color:var(--green)}
+.add{
+  min-width:112px;height:54px;border:0;border-radius:13px;
+  background:var(--text);color:#fff;font-weight:750;font-size:17px;
+  touch-action:manipulation;
+}
+.bottom-actions{display:flex;gap:10px;margin-top:12px}
+.secondary{
+  flex:1;min-height:50px;border:1px solid var(--border);border-radius:13px;
+  background:#fff;color:#334155;font-weight:650;touch-action:manipulation;
+}
+.empty{
+  background:var(--card);border:2px dashed var(--border);border-radius:16px;
+  padding:28px 15px;text-align:center;color:var(--muted);font-size:17px;
+}
+.status{text-align:center;min-height:22px;margin-top:10px;color:var(--green-dark);font-size:14px;font-weight:650}
+@media(max-width:600px){
+  main{padding:18px 14px 28px}
+  h1{font-size:27px}.subtitle{font-size:16px}
+  .name{font-size:19px}
+}
+@media(max-width:430px){
+  .add-row{flex-direction:column}
+  .add{width:100%}
+  .remove{min-width:58px}
+}
+@media(prefers-reduced-motion:reduce){
+  *{scroll-behavior:auto!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+<main>
+  <h1>🏸 คิวทีมแบดมินตัน</h1>
+  <div class="subtitle">กด “ต่อ” เพื่อย้ายทีมลำดับ 1 ไปท้ายคิว</div>
+
+  <section>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <h2 class="section-title" style="margin:0">ลำดับคิว</h2>
+      <span id="count" class="badge">0 ทีม</span>
+    </div>
+    <div id="queue" class="queue" aria-live="polite"></div>
+  </section>
+
+  <button id="nextBtn" class="next" type="button">ต่อ →</button>
+  <div class="hint">ทีมลำดับ 1 → ไปอยู่ลำดับสุดท้าย</div>
+
+  <section class="add-box">
+    <div class="section-title">เพิ่มทีม</div>
+    <div class="add-row">
+      <label for="teamName" style="position:absolute;left:-9999px">ชื่อทีม</label>
+      <input id="teamName" type="text" placeholder="เช่น ทีม A" maxlength="30" autocomplete="off">
+      <button id="addBtn" class="add" type="button">+ เพิ่มทีม</button>
+    </div>
+    <div id="status" class="status" aria-live="polite"></div>
+  </section>
+
+  <div class="bottom-actions">
+    <button id="undoBtn" class="secondary" type="button">↩ Undo</button>
+    <button id="clearBtn" class="secondary" type="button">ล้างทั้งหมด</button>
+  </div>
+</main>
+
+<script>
+(() => {
+  const STORAGE_KEY = "badminton_queue_v2";
+  let teams = [];
+  let history = [];
+
+  const $ = id => document.getElementById(id);
+  const input = $("teamName"), addBtn = $("addBtn"), nextBtn = $("nextBtn");
+  const undoBtn = $("undoBtn"), clearBtn = $("clearBtn");
+  const queue = $("queue"), count = $("count"), status = $("status");
+
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+    if (Array.isArray(saved)) teams = saved;
+  } catch(e) {}
+
+  function persist() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(teams)); } catch(e) {}
+  }
+
+  function checkpoint() {
+    history.push([...teams]);
+    if (history.length > 30) history.shift();
+  }
+
+  function render() {
+    count.textContent = `${teams.length} ทีม`;
+    nextBtn.disabled = teams.length < 2;
+    undoBtn.disabled = history.length === 0;
+
+    if (!teams.length) {
+      queue.innerHTML = `
+        <div class="empty">
+          ยังไม่มีทีม<br>
+          <span style="font-size:15px">เพิ่มชื่อทีมจากช่องด้านล่างได้เลย</span>
+        </div>`;
+      return;
+    }
+
+    queue.innerHTML = teams.map((team, i) => `
+      <div class="team ${i===0 ? "top" : ""} ${i===1 ? "second" : ""}">
+        <div class="left">
+          <div class="number">${i+1}</div>
+          <div style="min-width:0">
+            <div class="name">${escapeHtml(team)}</div>
+            ${i===0 ? '<div class="badge">กำลังอยู่คิวแรก</div>' : ''}
+          </div>
+        </div>
+        <button class="remove" type="button" data-remove="${i}">ลบ</button>
+      </div>
+    `).join("");
+  }
+
+  function addTeam() {
+    const name = input.value.trim();
+    if (!name) {
+      status.textContent = "กรุณาใส่ชื่อทีม";
+      input.focus();
+      return;
+    }
+    checkpoint();
+    teams.push(name);
+    persist();
+    input.value = "";
+    status.textContent = `เพิ่ม “${name}” แล้ว`;
+    input.focus();
+    render();
+  }
+
+  function nextTeam() {
+    if (teams.length < 2) return;
+    checkpoint();
+    const first = teams.shift();
+    teams.push(first);
+    persist();
+    status.textContent = `เลื่อน “${first}” ไปท้ายคิวแล้ว`;
+    render();
+  }
+
+  function undo() {
+    if (!history.length) return;
+    teams = history.pop();
+    persist();
+    status.textContent = "ย้อนกลับเรียบร้อย";
+    render();
+  }
+
+  function clearAll() {
+    if (!teams.length) return;
+    checkpoint();
+    teams = [];
+    persist();
+    status.textContent = "ล้างคิวทั้งหมดแล้ว";
+    render();
+  }
+
+  function removeTeam(index) {
+    if (index < 0 || index >= teams.length) return;
+    const removed = teams[index];
+    checkpoint();
+    teams.splice(index, 1);
+    persist();
+    status.textContent = `ลบ “${removed}” แล้ว`;
+    render();
+  }
+
+  function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, c => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+    }[c]));
+  }
+
+  addBtn.addEventListener("click", addTeam);
+  input.addEventListener("keydown", e => {
+    if (e.key === "Enter") addTeam();
+  });
+  nextBtn.addEventListener("click", nextTeam);
+  undoBtn.addEventListener("click", undo);
+  clearBtn.addEventListener("click", clearAll);
+  queue.addEventListener("click", e => {
+    const btn = e.target.closest("[data-remove]");
+    if (btn) removeTeam(Number(btn.dataset.remove));
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
